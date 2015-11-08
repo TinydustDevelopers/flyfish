@@ -1,0 +1,44 @@
+/* 覆盖 bootstrap */
+body {
+    background-color: #faf9f6;
+    font-family: 'PT Sans Narrow', sans-serif, 'Microsoft YaHei';
+}
+
+.container {
+    width: 80%;
+}
+
+.container-fluid {
+    width: 80%;
+}
+
+.navbar {
+    border-radius: 0;
+    background-color: #ffffff;
+    border-bottom: 1px solid #cccccc;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.04);
+}
+
+.navbar-brand {
+    font-size: 2.5em;
+    font-weight: 600;
+}
+
+/* ui */
+.ui.header {
+    text-align: center;
+}
+.ui.header.logo img {
+    max-width: 256px;
+}
+
+.ui.header.title {
+    font-size: 3em;
+    font-weight: 600;
+}
+
+.ui.green {
+    background-color: #39a85b;
+    color: #ffffff;
+    border: 0;
+}
