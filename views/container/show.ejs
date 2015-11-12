@@ -9,7 +9,7 @@
         <% } %>
       </thead>
       <tbody>
-        <% for (var i = 1, cLength = containers.length; i < cLength; i++) { %>
+        <% for (var i = 0, cLength = containers.length; i < cLength; i++) { %>
         <tr>
           <% for (var key in containers[i]) { %>
             <td><%= containers[i][key]; %></td>

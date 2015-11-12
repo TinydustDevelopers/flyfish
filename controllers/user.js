@@ -86,8 +86,11 @@ module.exports = {
       var containers = stdout.split('\n');
       containers.pop();
 
+      console.log(containers);
+
       var attributes = containers[0].split(/\s{2,}/);
       containers.shift();
+      console.log(containers);
 
       for (var i = 0, cLength = containers.length; i < cLength; i++) {
         var container = containers[i].split(/\s{2,}/);
@@ -97,6 +100,7 @@ module.exports = {
         }
         containers[i] = obj;
       }
+      console.log(containers);
 
       res.render('container/show', {
         'title': req.session.user.username,
