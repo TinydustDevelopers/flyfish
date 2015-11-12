@@ -45,14 +45,16 @@ app.use(function (req, res, next) {
     next();
   } else {
     var arr = req.url.split('/');
-    for (var i = 0; i < arr.length; i++) {
+    for (var i = 0, length = arr.length; i < length; i++) {
       arr[i] = arr[i].split('?')[0];
     }
     if (arr.length > 1 && arr[1] == '') {
       next();
-    } else if (arr.length > 2 && arr[1] == 'user' && (arr[2] == 'register' || arr[2] == 'login')) {
+    } else if (arr.length > 2 && arr[1] == 'user' && (arr[2] == 'register' || arr[2] == 'login' || arr[2] == 'logout')) {
       next();
     } else {
+      req.session.originalUrl = req.originalUrl ? req.originalUrl : null;
+      console.log('req.session.originalUrl: ' + req.session.originalUrl);
       req.flash('error', '请先登录');
       res.redirect('/user/login');
     }

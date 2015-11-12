@@ -1,0 +1,24 @@
+<%- include ../header.ejs %>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <table class="table table-hover">
+      <thead>
+        <% for (var key in containers[0]) { %>
+          <td><%= key; %></td>
+        <% } %>
+      </thead>
+      <tbody>
+        <% for (var i = 1, cLength = containers.length; i < cLength; i++) { %>
+        <tr>
+          <% for (var key in containers[i]) { %>
+            <td><%= containers[i][key]; %></td>
+          <% } %>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include ../footer.ejs %>

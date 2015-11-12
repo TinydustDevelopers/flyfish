@@ -20,7 +20,8 @@
         <li><a href="/user/register"><span class="glyphicon glyphicon-user">&nbsp;</span>注册</a></li>
         <li><a href="/user/login"><span class="glyphicon glyphicon-log-in">&nbsp;</span>登录</a></li>
         <% } else { %>
-        <li><a href="/user/<%= user._id %>"><span class="glyphicon glyphicon-user">&nbsp;</span><%= user.username %></a></li>
+        <li><a href="/user/<%= user._id %>/container"><span class="glyphicon glyphicon-user">&nbsp;</span><%= user.username %></a></li>
+        <li><a href="/user/<%= user._id %>/container/create"><span class="glyphicon glyphicon-plus"></span></a></li>
         <li><a href="/user/logout"><span class="glyphicon glyphicon-log-in">&nbsp;</span>登出</a></li>
         <% } %>
       </ul>
