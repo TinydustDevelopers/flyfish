@@ -2,22 +2,34 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-    <table class="table table-hover">
-      <thead>
-        <% for (var key in containers[0]) { %>
-          <td><%= key; %></td>
-        <% } %>
-      </thead>
-      <tbody>
-        <% for (var i = 0, cLength = containers.length; i < cLength; i++) { %>
-        <tr>
-          <% for (var key in containers[i]) { %>
-            <td><%= containers[i][key]; %></td>
+    <% if (containers.length > 0) { %>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <% for (var key in containers[0]) { %>
+              <td>
+                <%= key; %>
+              </td>
+            <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% for (var i = 0, cLength = containers.length; i < cLength; i++) { %>
+            <tr>
+              <% for (var key in containers[i]) { %>
+                <td><%= containers[i][key]; %></td>
+              <% } %>
+            </tr>
           <% } %>
-        </tr>
-        <% } %>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div class="alert alert-danger">
+        <p>
+          没有容器正在运行
+        </p>
+      </div>
+    <% } %>
   </div>
 </div>
 

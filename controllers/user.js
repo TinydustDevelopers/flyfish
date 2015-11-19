@@ -1,15 +1,14 @@
 'use strict';
 
 var crypto = require('crypto');
-var exec = require('child_process').exec;
-var fs = require('fs');
+var pingpp = require('pingpp')('sk_test_nXXvTGzn5Ki1j9WbDCn9Oq98');
 
 var config = require('../config/index.js');
 
 var User = require('../models/user.js');
 
 module.exports = {
-  'register': function (req, res, next) {
+  'register': function(req, res, next) {
     var email = req.body.email;
     var username = req.body.username;
     var password = req.body.password;
@@ -19,10 +18,11 @@ module.exports = {
       req.flash('error', '两次输入的密码不一致!');
       return res.redirect('/user/register');
     }
-    password = crypto.createHash('md5').update(password + config.SECRET).digest('hex');
+    password = crypto.createHash('md5').update(password + config.SECRET).digest(
+      'hex');
 
     var newUser = new User(email, username, password);
-    User.get(email, function (error, user) {
+    User.get(email, function(error, user) {
       if (error) {
         return res.redirect('/internal_error');
       }
@@ -30,7 +30,7 @@ module.exports = {
         req.flash('error', '邮箱已被注册');
         return res.redirect('/user/register');
       }
-      newUser.save(function (error, user) {
+      newUser.save(function(error, user) {
         if (error) {
           return res.redirect('/internal_error');
         }
@@ -39,14 +39,15 @@ module.exports = {
         res.redirect('/');
       })
     })
-  },  // end register
+  }, // end register
 
-  'login': function (req, res, next) {
+  'login': function(req, res, next) {
     var email = req.body.email;
     var password = req.body.password;
-    password = crypto.createHash('md5').update(password + config.SECRET).digest('hex');
+    password = crypto.createHash('md5').update(password + config.SECRET).digest(
+      'hex');
 
-    User.get(email, function (error, user) {
+    User.get(email, function(error, user) {
       if (error) {
         return res.redirect('/internal_error');
       }
@@ -56,8 +57,7 @@ module.exports = {
       }
       if (user.password != password) {
         req.flash('error', '邮箱或密码错误');
-        req.session.user = user;
-        res.redirect('/')
+        return res.redirect('/user/login')
       }
       req.session.user = user;
       if (req.session.originalUrl) {
@@ -66,54 +66,29 @@ module.exports = {
       } else {
         var redirectUrl = '/';
       }
-      console.log(redirectUrl);
       res.redirect(redirectUrl);
     })
-  },  // end login
+  }, // end login
 
-  'getContainer': function (req, res, next) {
-    var result = exec('docker images', function (error, stdout, stderr) {
-      if (error !== null) {
-        console.log('exec error: ' + error);
-        return res.redirect('/internal_error');
+  'charge': function (req, res, next) {
+    pingpp.charges.create({
+      subject: "V2EX",
+      body: "V2EX React Native",
+      amount: req.body.amount,
+      order_no: "123456789",
+      channel: "alipay",
+      currency: "cny",
+      client_ip: "127.0.0.1",
+      app: {id: "app_1q18uDvHqHG4Lq1q"}
+    }, function(error, charge) {
+      if (error) {
+        console.log(error);
+        req.flash('error', '服务器内部错误');
+        return res.status('500').json({
+          'message': 'internal error'
+        });
       }
-
-      if (stderr) {
-        console.log(('stderr: ' + stderr));
-        return res.redirect('/internal_error');
-      }
-
-      var containers = stdout.split('\n');
-      containers.pop();
-
-      console.log(containers);
-
-      var attributes = containers[0].split(/\s{2,}/);
-      containers.shift();
-      console.log(containers);
-
-      for (var i = 0, cLength = containers.length; i < cLength; i++) {
-        var container = containers[i].split(/\s{2,}/);
-        var obj = {};
-        for (var j = 0, aLength = attributes.length; j < aLength; j++) {
-          obj[attributes[j]] = container[j];
-        }
-        containers[i] = obj;
-      }
-      console.log(containers);
-
-      res.render('container/show', {
-        'title': req.session.user.username,
-        'user': req.session.user,
-        'error': req.flash('error').toString(),
-        'success': req.flash('success').toString(),
-
-        'containers': containers
-      });
+      res.status(200).json(charge);
     });
-  },  // end getContainer
-
-  'createContainer': function () {
-
-  }  // end createContainer
+  }, // end charge
 };

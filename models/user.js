@@ -11,7 +11,7 @@ function User(email, username, password) {
   this.password = password;
 }
 
-MongoClient.connect(config.mongodb.url, function (error, db) {
+MongoClient.connect(config.mongodb.url, function(error, db) {
   if (error) {
     console.log('connect to mongodb error');
     process.exit(1);
@@ -19,14 +19,14 @@ MongoClient.connect(config.mongodb.url, function (error, db) {
 
   var collection = db.collection('users');
 
-  User.prototype.save = function (callback) {
+  User.prototype.save = function(callback) {
     var user = {
       'username': this.username,
       'password': this.password,
       'email': this.email
     };
 
-    collection.insertOne(user, function (error, user) {
+    collection.insertOne(user, function(error, user) {
       if (error) {
         return callback(error);
       }
@@ -34,10 +34,10 @@ MongoClient.connect(config.mongodb.url, function (error, db) {
     })
   };
 
-  User.get = function (email, callback) {
+  User.get = function(email, callback) {
     collection.findOne({
       'email': email
-    }, function (error, user) {
+    }, function(error, user) {
       if (error) {
         return callback(error);
       }

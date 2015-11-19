@@ -4,6 +4,11 @@ var config = {
 
   'LOGIN': '登录',
   'REGISTER': '注册',
+  'CHARGE': '充值',
+
+  'CONTAINER': '容器',
+  'IMAGE': '镜像',
+  'CREATE_CONTAINER': '创建容器',
 
   'INTERNAL_ERROR': '内部错误',
 
@@ -13,6 +18,10 @@ var config = {
     'host': '127.0.0.1',
     'port': 27017,
     'db': 'dockerci'
+  },
+
+  'server': {
+    'host': 'http://dockerci.duanpengfei.com'
   }
 };
 
