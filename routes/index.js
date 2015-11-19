@@ -5,6 +5,7 @@ var config = require('../config/index');
 
 var userController = require('../controllers/user.js');
 var containerController = require('../controllers/container.js');
+var webhookController = require('../controllers/webhook.js');
 
 // page
 router.get('/', function(req, res, next) {
@@ -68,5 +69,10 @@ router.get('/container', containerController.getContainers);
 
 router.get('/container/create', containerController.createContainer);
 router.post('/container/create', containerController.createContainer);
+
+
+// webhook
+// container
+router.post('/webhook/container/:containerName', webhookController.container);
 
 module.exports = router;

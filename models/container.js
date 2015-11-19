@@ -51,9 +51,20 @@ Container.getFromSystem = function(callback) {
 MongoClient.connect(config.mongodb.url, function(error, db) {
   var collection = db.collection('containers');
 
-  Container.getFromMongodb = function(containerName, callback) {
+  Container.getFromMongodbByName = function(containerName, callback) {
     collection.findOne({
-      'container_name': containerName
+      'name': containerName
+    }, function(error, container) {
+      if (error) {
+        return callback(error);
+      }
+      callback(null, container);
+    });
+  };
+
+  Container.getFromMongodbByUrl = function(containerUrl, callback) {
+    collection.findOne({
+      'url': containerUrl
     }, function(error, container) {
       if (error) {
         return callback(error);
@@ -64,11 +75,11 @@ MongoClient.connect(config.mongodb.url, function(error, db) {
 
   Container.prototype.save = function(callback) {
     var container = {
-      'container_name': this.containerName,
+      'name': this.containerName,
       'command': this.command,
       'image_name': this.imageName,
-      'container_url': this.containerUrl,
-      'user_id': this.userId
+      'user_id': this.userId,
+      'url': this.containerUrl
     };
     console.log(container);
 

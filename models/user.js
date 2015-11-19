@@ -34,9 +34,20 @@ MongoClient.connect(config.mongodb.url, function(error, db) {
     })
   };
 
-  User.get = function(email, callback) {
+  User.getByEmail = function(email, callback) {
     collection.findOne({
       'email': email
+    }, function(error, user) {
+      if (error) {
+        return callback(error);
+      }
+      callback(null, user)
+    });
+  };
+
+  User.getById = function(userId, callback) {
+    collection.findOne({
+      '_id': new ObjectID(userId)
     }, function(error, user) {
       if (error) {
         return callback(error);

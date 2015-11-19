@@ -49,12 +49,12 @@ module.exports = {
       var command = req.body['command'];
       var imageName = req.body['image-name'];
       var userId = req.session.user._id;
-      var containerUrl = config.server.host + '/container/' + crypto.createHash('md5').update(containerName).digest('hex');
+      var containerUrl = config.server.host + '/webhook/container/' + crypto.createHash('md5').update(containerName).digest('hex');
       console.log(containerUrl);
       var newContainer = new Container(containerName, command, imageName, containerUrl, userId);
 
       console.log(newContainer);
-      Container.getFromMongodb(containerName, function (error, container) {
+      Container.getFromMongodbByName(containerName, function (error, container) {
         if (error) {
           console.log(error);
           return res.render('/internal_error');
@@ -69,16 +69,11 @@ module.exports = {
             return res.render('/internal_error');
           }
 
-          var successMessage = '容器创建成功, 请将: ' + container.container_url + ' 添加到 GitHub 项目的 WebHook 地址栏中。';
+          var successMessage = '容器创建成功, 请将: ' + container.url + ' 添加到 GitHub 项目的 WebHook 地址栏中。';
           req.flash('success', successMessage);
           res.redirect('/container');
         });
       });
     }
   },  // end createContainer
-
-  'webhook': function (req, res, next) {
-    var body = req.body;
-    console.log(body);
-  },  // end webhook
 };

@@ -22,7 +22,7 @@ module.exports = {
       'hex');
 
     var newUser = new User(email, username, password);
-    User.get(email, function(error, user) {
+    User.getByEmail(email, function(error, user) {
       if (error) {
         return res.redirect('/internal_error');
       }
@@ -47,7 +47,7 @@ module.exports = {
     password = crypto.createHash('md5').update(password + config.SECRET).digest(
       'hex');
 
-    User.get(email, function(error, user) {
+    User.getByEmail(email, function(error, user) {
       if (error) {
         return res.redirect('/internal_error');
       }

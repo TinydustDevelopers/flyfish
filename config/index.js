@@ -22,6 +22,10 @@ var config = {
 
   'server': {
     'host': 'http://dockerci.duanpengfei.com'
+  },
+
+  'repository': {
+    'location': '/home/fei/dockerci_repo'
   }
 };
 
