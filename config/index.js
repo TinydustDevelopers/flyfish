@@ -1,16 +1,18 @@
 var config = {
-  // const
-  'INDEX': '主页',
+  'language': {
+    // const
+    'INDEX': '主页',
 
-  'LOGIN': '登录',
-  'REGISTER': '注册',
-  'CHARGE': '充值',
+    'LOGIN': '登录',
+    'REGISTER': '注册',
+    'CHARGE': '充值',
 
-  'CONTAINER': '容器',
-  'IMAGE': '镜像',
-  'CREATE_CONTAINER': '创建容器',
+    'CONTAINER': '容器',
+    'IMAGE': '镜像',
+    'CREATE_CONTAINER': '创建容器',
 
-  'INTERNAL_ERROR': '内部错误',
+    'INTERNAL_ERROR': '内部错误',
+  },
 
   'SECRET': 'hardtoguess',
 
@@ -21,11 +23,19 @@ var config = {
   },
 
   'server': {
-    'host': 'http://dockerci.duanpengfei.com'
+    'host': 'http://dockerci.duanpengfei.com',
+    'ip': '207.226.141.72'
   },
 
-  'repository': {
-    'location': '/home/fei/dockerci_repo'
+  'docker': {
+    'api': {
+      'ip': '207.226.141.72',
+      'port': 2375
+    }
+  },
+
+  'repo': {
+    'location': '/root/docker_ci_repo'
   }
 };
 

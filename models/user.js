@@ -19,13 +19,7 @@ MongoClient.connect(config.mongodb.url, function(error, db) {
 
   var collection = db.collection('users');
 
-  User.prototype.save = function(callback) {
-    var user = {
-      'username': this.username,
-      'password': this.password,
-      'email': this.email
-    };
-
+  User.insert = function(user, callback) {
     collection.insertOne(user, function(error, user) {
       if (error) {
         return callback(error);

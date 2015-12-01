@@ -1,66 +1,157 @@
-var exec = require('child_process').exec;
-var execFile = require('child_process').execFile;
-
 var config = require('../config/index.js');
 
+var exec = require('child_process').exec;
+var fs = require('fs');
+
+var simpleGit = require('simple-git');
+
 var Container = require('../models/container.js');
-var User = require('../models/user.js');
+var containerApi = require('../apis/container.js');
 
 module.exports = {
-  'container': function (req, res, next) {
+  'createContainer': function (req, res, next) {
     var containerName = req.params.containerName;
     var body = req.body;
-    var repositoryBranch = body.ref;
+    var repoBranch = body.ref;
     var containerUrl = config.server.host + '/webhook/container/' + containerName;
 
-    if (repositoryBranch == 'refs/heads/master') {
-      Container.getFromMongodbByUrl(containerUrl, function (error, container) {
+    if (repoBranch == 'refs/heads/master') {
+      Container.getByUrl(containerUrl, function (error, container) {
         if (error) {
-          console.log(error);
-          return res.redirect('/internal_error');
+          res.status(200).end();
+          return res.end();
         }
 
-        User.getById(container.user_id, function (error, user) {
-          if (error) {
-            console.log(error);
-            return res.redirect('/internal_error');
-          }
+        var dir = container.dir;
+        var repoCloneUrl = body.repository.clone_url;
 
-          var repositoryLocation = config.repository.location + '/' + user.username + '/' + container.name;
-          var repositoryCloneUrl = body.repository.clone_url;
-          execFile('./scripts/pull.sh', [repositoryLocation, repositoryCloneUrl], function (error, stdout, stderr) {
-            if (error) {
-              console.log(error);
-              return res.redirect('/internal_error');
-            }
-
-            var index = repositoryCloneUrl.indexOf('.git');
-            if (stderr.indexOf(repositoryCloneUrl.slice(0, index)) == -1) {
-              console.log('stderr: ' + stderr);
-              return res.redirect('/internal_error');
-            }
-
-            console.log('stdout: ' + stdout);
-
-            var command = 'docker run --name ' + container.name + ' -d -v ' + repositoryLocation + ':/code -p 30000:3000 ' + container.image_name + ' /bin/bash -c "' + container.command + '"';
-            console.log(command);
-            exec(command, function (error, stdout, stderr) {
+        // 获取 GitHub 代码，npm install
+        fs.exists(config.repo.location + '/' + container.name, function (exists) {
+          if (exists) {
+            simpleGit(config.repo.location + '/' + container.name)
+            .pull(function (error, result) {
               if (error) {
                 console.log(error);
-                return res.redirect('/internal_error');
+                return res.status(200).end();
               }
-
-              if (stderr) {
-                console.log('stderr: ' + stderr);
-                return res.redirect('/internal_error');
-              }
-
-              console.log('stdout: ' + stdout);
+              exec('rm -rf node_modules', {
+                'cwd': config.repo.location + '/' + container.name
+              }, function (error, stdout, stderr) {
+                if (error || stderr) {
+                  console.log(error);
+                  console.log('stderr: ' + stderr);
+                  return res.status(200).end();
+                }
+                exec('npm install', {
+                  'cwd': config.repo.location + '/' + container.name
+                }, function (error, stdout, stderr) {
+                  if (error || stderr) {
+                    console.log(error);
+                    console.log('stderr: ' + stderr);
+                    return res.status(200).end();
+                  }
+                  // 启动容器
+                  run(req, res, container);
+                });
+              });
             });
-          });
+          } else {
+            simpleGit(config.repo.location)
+            .clone(repoCloneUrl, container.name, function (error) {
+              if (error) {
+                console.log(error);
+                return res.status(200).end();
+              }
+              exec('npm install', {
+                'cwd': config.repo.location + '/' + container.name
+              }, function (error, stdout, stderr) {
+                if (error || stderr) {
+                  console.log(error);
+                  console.log('stderr: ' + stderr);
+                  return res.status(200).end();
+                }
+                // 启动容器
+                run(req, res, container);
+              });
+            });
+          }
         });
-        // var command = 'docker run --name' + container.name
-      })
+      });
     }
-  }, // end container
+  }  // end container
+};
+
+function run(req, res, container) {
+  if (container.Id != '') {
+    console.log('not null');
+    containerApi.startContainer(container.Id, function (error) {
+      if (error) {
+        if (error == 304) {
+          containerApi.reStartContainer(container.Id, function (error) {
+            if (error) {
+              console.log(error);
+              res.status(200).end();
+              return res.end();
+            }
+            return res.end();
+          });
+        } else {
+          console.log(error);
+          res.status(200).end();
+          return res.end();
+        }
+      } else {
+        res.status(200).end();
+      }
+    });
+  } else {
+    console.log('null');
+    var containerInfo = {
+      'Image': container.image,
+      'Cmd': ['/bin/bash', '-c', container.command],
+      'Volumes': { '/code': {} },
+      'WorkingDir': '/code',
+      'ExposedPorts': { '3000/tcp': {} },
+      'HostConfig': {
+        'Binds': [ container.dir + ':/code' ],
+        'PortBindings': { '3000/tcp': [{ 'HostPort': '' + container.port }] }
+      }
+    };
+    containerApi.createContainer(container.name, containerInfo, function (error, result) {
+      if (error) {
+        console.log(error);
+        res.status(200).end();
+        return res.end();
+      }
+      console.log('result: ' + result);
+      Container.insertIdFromApiToMongodb(container._id, result.Id, function (error, container) {
+        if (error) {
+          console.log(error);
+          res.status(200).end();
+          res.end();
+        }
+        console.log('container: ' + container);
+        containerApi.startContainer(container.Id, function (error) {
+          if (error) {
+            if (error == 304) {
+              containerApi.reStartContainer(container.Id, function (error) {
+                if (error) {
+                  console.log(error);
+                  res.status(200).end();
+                  return res.end();
+                }
+                return res.end();
+              });
+            } else {
+              console.log(error);
+              res.status(200).end();
+              return res.end();
+            }
+          } else {
+            res.end();
+          }
+        });
+      });
+    });
+  }
 }

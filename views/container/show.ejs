@@ -2,25 +2,41 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-    <% if (containers.length > 0) { %>
+    <% if (upContainers.length > 0 || exitContainers.length > 0) { %>
       <table class="table table-hover">
         <thead>
-          <tr>
-            <% for (var key in containers[0]) { %>
-              <td>
-                <%= key; %>
-              </td>
-            <% } %>
+          <tr class="active">
+            <td>
+              Name
+            </td>
+            <td>
+              Image
+            </td>
+            <td>
+              Port
+            </td>
+            <td>
+              Create Time
+            </td>
           </tr>
         </thead>
         <tbody>
-          <% for (var i = 0, cLength = containers.length; i < cLength; i++) { %>
-            <tr>
-              <% for (var key in containers[i]) { %>
-                <td><%= containers[i][key]; %></td>
-              <% } %>
+          <% upContainers.forEach(function (container) { %>
+            <tr class="success">
+              <td><%= container.name; %></td>
+              <td><%= container.image; %></td>
+              <td><%= container.port; %></td>
+              <td><%= container.created; %></td>
             </tr>
-          <% } %>
+          <% }); %>
+          <% exitContainers.forEach(function (container) { %>
+            <tr class="warning">
+              <td><%= container.name; %></td>
+              <td><%= container.image; %></td>
+              <td><%= container.port; %></td>
+              <td><%= container.created; %></td>
+            </tr>
+          <% }); %>
         </tbody>
       </table>
     <% } else { %>

@@ -6,52 +6,12 @@ var ObjectID = require('mongodb').ObjectID;
 
 var config = require('../config/index.js');
 
-function Container(containerName, command, imageName, containerUrl, userId) {
-  this.containerName = containerName;
-  this.command = command;
-  this.imageName = imageName;
-  this.containerUrl = containerUrl
-  this.userId = userId;
-}
-
-Container.getFromSystem = function(callback) {
-  var result = exec('docker ps -a', function(error, stdout, stderr) {
-    if (error) {
-      return callback(error);
-    }
-
-    if (stderr) {
-      return callback(error);
-    }
-
-    var containers = stdout.split('\n');
-    containers.pop();
-
-    var attributes = containers[0].split(/\s{2,}/);
-    containers.shift();
-
-    for (var i = 0, cLength = containers.length; i < cLength; i++) {
-      var container = containers[i].split(/\s{2,}/);
-      // 处理 container 没有 PORT 字段
-      if (container.length == 6) {
-        container[6] = container[5];
-        container[5] = '';
-      }
-      var obj = {};
-      for (var j = 0, aLength = attributes.length; j < aLength; j++) {
-        obj[attributes[j]] = container[j];
-      }
-      containers[i] = obj;
-    }
-
-    callback(null, containers);
-  });
-}; // end getImage
+var Container = {};
 
 MongoClient.connect(config.mongodb.url, function(error, db) {
   var collection = db.collection('containers');
 
-  Container.getFromMongodbByName = function(containerName, callback) {
+  Container.getByName = function(containerName, callback) {
     collection.findOne({
       'name': containerName
     }, function(error, container) {
@@ -62,7 +22,7 @@ MongoClient.connect(config.mongodb.url, function(error, db) {
     });
   };
 
-  Container.getFromMongodbByUrl = function(containerUrl, callback) {
+  Container.getByUrl = function(containerUrl, callback) {
     collection.findOne({
       'url': containerUrl
     }, function(error, container) {
@@ -73,23 +33,32 @@ MongoClient.connect(config.mongodb.url, function(error, db) {
     });
   };
 
-  Container.prototype.save = function(callback) {
-    var container = {
-      'name': this.containerName,
-      'command': this.command,
-      'image_name': this.imageName,
-      'user_id': this.userId,
-      'url': this.containerUrl
-    };
-    console.log(container);
-
-    collection.insertOne(container, function(error, container) {
+  Container.insert = function(containerInfo, callback) {
+    collection.insertOne(containerInfo, function(error, container) {
       if (error) {
         return callback(error);
       }
       callback(null, container.ops[0]);
     });
   };
+
+  Container.insertIdFromApiToMongodb = function (id, Id, callback) {
+    // query, sort, doc, options, callback
+    collection.findAndModify({
+        '_id': new ObjectID(id)
+      }, [
+        ['port', 1]
+      ], {
+        '$set': { 'Id': Id }
+      }, {
+        'new': true
+      }, function (error, doc) {
+      if (error) {
+        return callback(error);
+      }
+      callback(null, doc.value);
+    })
+  };
 });
 
-module.exports = Container
+module.exports = Container;

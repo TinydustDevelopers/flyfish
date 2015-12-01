@@ -43,35 +43,37 @@ app.use(session({
 
 // 登录拦截
 app.use(function (req, res, next) {
-  // if (req.session.user) {  // 判断用户是否登录
-  //   next();
-  // } else {
-  //   // 解析用户请求的路径
-  //   var arr = req.url.split('/');
-  //   // 去除 GET 请求路径上携带的参数
-  //   for (var i = 0, length = arr.length; i < length; i++) {
-  //     arr[i] = arr[i].split('?')[0];
-  //   }
-  //   // 判断请求路径是否为根、登录、注册、登出，如果是不做拦截
-  //   console.log(arr);
-  //   if (arr.length > 1 && (arr[1] == '' || arr[1] == 'webhook')) {
-  //     next();
-  //   } else if (arr.length > 2 && arr[1] == 'user' && (arr[2] == 'register' || arr[2] == 'login' || arr[2] == 'logout')) {
-  //     next();
-  //   } else {  // 登录拦截
-  //     req.session.originalUrl = req.originalUrl ? req.originalUrl : null;  // 记录用户原始请求路径
-  //     req.flash('error', '请先登录');
-  //     res.redirect('/user/login');  // 将用户重定向到登录页面
-  //   }
-  // }
-  next();
+  if (req.session.user) {  // 判断用户是否登录
+    next();
+  } else {
+    // 解析用户请求的路径
+    var arr = req.url.split('/');
+    // 去除 GET 请求路径上携带的参数
+    for (var i = 0, length = arr.length; i < length; i++) {
+      arr[i] = arr[i].split('?')[0];
+    }
+    // 判断请求路径是否为根、登录、注册、登出、webhook，如果是不做拦截
+    if (arr.length > 1 && (arr[1] == '' || arr[1] == 'webhook')) {
+      next();
+    } else if (arr.length > 2 && arr[1] == 'user' && (arr[2] == 'register' || arr[2] == 'login' || arr[2] == 'logout')) {
+      next();
+    } else {  // 登录拦截
+      req.session.originalUrl = req.originalUrl ? req.originalUrl : null;  // 记录用户原始请求路径
+      req.flash('error', '请先登录');
+      res.redirect('/user/login');  // 将用户重定向到登录页面
+    }
+  }
 });
 
 // routes
-var indexRoute = require('./routes/index');
+var indexRoute = require('./routes/index.js');
 app.use('/', indexRoute);
-// var userRoute = require('./routes/user');
-// app.use('/user, userRoute');
+var userRoute = require('./routes/user.js');
+app.use('/user', userRoute);
+var containerRoute = require('./routes/container.js');
+app.use('/container', containerRoute);
+var webhookRoute = require('./routes/webhook.js');
+app.use('/webhook', webhookRoute);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,7 +1,6 @@
 'use strict';
 
 var crypto = require('crypto');
-var pingpp = require('pingpp')('sk_test_nXXvTGzn5Ki1j9WbDCn9Oq98');
 
 var config = require('../config/index.js');
 
@@ -14,14 +13,23 @@ module.exports = {
     var password = req.body.password;
     var passwordRepeat = req.body['password-repeat'];
 
+    if (!(email && username && password && passwordRepeat)) {
+      req.flash('error', '注册信息不完整');
+      return res.redirect('/user/register');
+    }
+
     if (passwordRepeat != password) {
       req.flash('error', '两次输入的密码不一致!');
       return res.redirect('/user/register');
     }
-    password = crypto.createHash('md5').update(password + config.SECRET).digest(
-      'hex');
+    password = crypto.createHash('md5').update(password + config.SECRET).digest('hex');
 
-    var newUser = new User(email, username, password);
+    var newUser = {
+      'email': email,
+      'username': username,
+      'password': password,
+      'confirmed': 0
+    };
     User.getByEmail(email, function(error, user) {
       if (error) {
         return res.redirect('/internal_error');
@@ -30,7 +38,7 @@ module.exports = {
         req.flash('error', '邮箱已被注册');
         return res.redirect('/user/register');
       }
-      newUser.save(function(error, user) {
+      User.insert(newUser, function(error, user) {
         if (error) {
           return res.redirect('/internal_error');
         }
@@ -44,8 +52,7 @@ module.exports = {
   'login': function(req, res, next) {
     var email = req.body.email;
     var password = req.body.password;
-    password = crypto.createHash('md5').update(password + config.SECRET).digest(
-      'hex');
+    password = crypto.createHash('md5').update(password + config.SECRET).digest('hex');
 
     User.getByEmail(email, function(error, user) {
       if (error) {
@@ -55,6 +62,7 @@ module.exports = {
         req.flash('error', '用户不存在');
         return res.redirect('/user/login');
       }
+
       if (user.password != password) {
         req.flash('error', '邮箱或密码错误');
         return res.redirect('/user/login')
@@ -71,24 +79,6 @@ module.exports = {
   }, // end login
 
   'charge': function (req, res, next) {
-    pingpp.charges.create({
-      subject: "V2EX",
-      body: "V2EX React Native",
-      amount: req.body.amount,
-      order_no: "123456789",
-      channel: "alipay",
-      currency: "cny",
-      client_ip: "127.0.0.1",
-      app: {id: "app_1q18uDvHqHG4Lq1q"}
-    }, function(error, charge) {
-      if (error) {
-        console.log(error);
-        req.flash('error', '服务器内部错误');
-        return res.status('500').json({
-          'message': 'internal error'
-        });
-      }
-      res.status(200).json(charge);
-    });
+    // todo
   }, // end charge
 };
