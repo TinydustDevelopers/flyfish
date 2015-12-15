@@ -32,12 +32,19 @@
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <% if (user) { %>
+                <ul class="nav navbar-nav">
+                    <li><a href="/container">已运行的容器</a></li>
+                    <li><a href="/container/user/<%= user._id %>">已创建的容器</a></li>
+                    <li><a href="/image">已下载的镜像</a></li>
+                </ul>
+                <% } %>
                 <ul class="nav navbar-nav navbar-right">
                     <% if (!user) { %>
                     <li><a href="/user/register"><span class="glyphicon glyphicon-user">&nbsp;</span>注册</a></li>
                     <li><a href="/user/login"><span class="glyphicon glyphicon-log-in">&nbsp;</span>登录</a></li>
                     <% } else { %>
-                    <li><a href="/container"><span class="glyphicon glyphicon-user">&nbsp;</span><%= user.username %>
+                    <li><a href="/user/profile"><span class="glyphicon glyphicon-user">&nbsp;</span><%= user.username %>
                         </a>
                     </li>
                     <li><a href="/container/create"><span class="glyphicon glyphicon-plus"></span></a></li>

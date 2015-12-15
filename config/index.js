@@ -7,8 +7,12 @@ var config = {
     'REGISTER': '注册',
     'CHARGE': '充值',
 
-    'CONTAINER': '容器',
+    'RUNNING_CONTAINER': '已运行的容器',
+    'CREATED_CONTAINER': '已创建的容器',
+    'CONTAINER_INFO': '容器详细信息',
+
     'IMAGE': '镜像',
+    'DOWNLOADED_IMAGE': '已下载的镜像',
     'CREATE_CONTAINER': '创建容器',
 
     'INTERNAL_ERROR': '内部错误',

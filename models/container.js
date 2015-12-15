@@ -11,6 +11,18 @@ var Container = {};
 MongoClient.connect(config.mongodb.url, function(error, db) {
   var collection = db.collection('containers');
 
+  Container.getByUserId = function (userId, callback) {
+    var query = {
+      'user_id': userId
+    };
+    collection.find(query).toArray(function (error, containers) {
+      if (error) {
+        return callback(error);
+      }
+      callback(null, containers);
+    });
+  };
+
   Container.getByName = function(containerName, callback) {
     collection.findOne({
       'name': containerName

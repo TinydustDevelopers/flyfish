@@ -5,6 +5,22 @@ var request = require('request');
 var baseUrl = 'http://' + config.docker.api.ip + ':' + config.docker.api.port;
 
 module.exports = {
+  'getContainerInfo': function (Id, callback) {
+    request({
+      'url': baseUrl + '/containers/' + Id + '/json',
+      'method': 'GET'
+    }, function (error, response, body) {
+      if (error) {
+        return callback(error);
+      }
+      if (response.statusCode == 200) {
+        return callback(null, JSON.parse(body));
+      } else {
+        return callback(response.statusCode);
+      }
+    });
+  },
+
   'getContainers': function (callback) {
     request({
       'url': baseUrl + '/containers/json?all=1',

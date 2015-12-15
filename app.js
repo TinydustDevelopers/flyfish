@@ -68,10 +68,16 @@ app.use(function (req, res, next) {
 // routes
 var indexRoute = require('./routes/index.js');
 app.use('/', indexRoute);
+
 var userRoute = require('./routes/user.js');
 app.use('/user', userRoute);
+
 var containerRoute = require('./routes/container.js');
 app.use('/container', containerRoute);
+
+var imageRoute = require('./routes/image.js');
+app.use('/image', imageRoute);
+
 var webhookRoute = require('./routes/webhook.js');
 app.use('/webhook', webhookRoute);
 

@@ -9,42 +9,53 @@ var containerApi = require('../apis/container.js');
 var imageApi = require('../apis/image.js');
 
 module.exports = {
-  'getContainers': function(req, res, next) {
+  'getRunningContainers': function (req, res, next) {
     containerApi.getContainers(function (error, containers) {
       if (error) {
         console.error(error);
         return res.redirect('/internal_error');
       }
 
+      var currentUser = req.session.user.username;
       var upContainers = [];
       var exitContainers = [];
-      for (var i = 0, cLength = containers.length; i < cLength; i++) {
-        // timestamp to date
-        var date = new Date(containers[i].Created * 1000);
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var hour = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
-        var min = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-        var sec = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-        var created = year + '/' + month + '/' + day + ' ' + hour + ':' + min + ':' + sec;
+      console.log(currentUser);
 
-        var c = {
-          'name': containers[i].Names[0].slice(1),
-          'image': containers[i].Image,
-          'port': containers[i].Ports.length > 0 ? containers[i].Ports[0].PublicPort + ':' + containers[i].Ports[0].PrivatePort : '',
-          'created': created
-        };
+      for (var i = 0, length = containers.length; i < length; i++) {
+        var containerName = containers[i].Names[0].slice(1);
+        var containerUser = containerName.split('-')[0];
 
-        if (containers[i].Status.split(' ')[0] == 'Up') {
-          upContainers.push(c);
-        } else {
-          exitContainers.push(c);
+        console.log(containerUser);
+
+        if (containerUser == currentUser) {
+          // timestamp to date
+          var date = new Date(containers[i].Created * 1000);
+          var year = date.getFullYear();
+          var month = date.getMonth() + 1;
+          var day = date.getDate();
+          var hour = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+          var min = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+          var sec = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+          var created = year + '-' + month + '-' + day + ' ' + hour + ':' + min + ':' + sec;
+
+          var c = {
+            'Id': containers[i].Id,
+            'name': containerName,
+            'image': containers[i].Image,
+            'port': containers[i].Ports.length > 0 ? containers[i].Ports[0].PublicPort + ':' + containers[i].Ports[0].PrivatePort : '',
+            'created': created
+          };
+
+          if (containers[i].Status.split(' ')[0] == 'Up') {
+            upContainers.push(c);
+          } else {
+            exitContainers.push(c);
+          }
         }
       }
 
-      res.render('container/show', {
-        'title': config.language.CONTAINER,
+      res.render('container/running', {
+        'title': config.language.RUNNING_CONTAINER,
         'user': req.session.user,
         'error': req.flash('error').toString(),
         'success': req.flash('success').toString(),
@@ -53,9 +64,95 @@ module.exports = {
         'exitContainers': exitContainers
       });
     });
-  },  // end getContainer
+  },  // end getRunningContainer
 
-  'createContainer': function(req, res, next) {
+  'getCreatedContainers': function (req, res, next) {
+    var userId = req.params.userId;
+
+    Container.getByUserId(userId, function (error, containers) {
+      if (error) {
+        console.error(error);
+        return res.render('/internal_error');
+      }
+
+      res.render('container/created', {
+        'title': config.language.CREATED_CONTAINER,
+        'user': req.session.user,
+        'error': req.flash('error').toString(),
+        'success': req.flash('success').toString(),
+
+        'containers': containers
+      })
+    });
+  },  // end getCreatedContainer
+
+  'getContainerInfo': function (req, res, next) {
+    var containderId = req.params.containerId;
+
+    containerApi.getContainerInfo(containderId, function (error, container) {
+      var portBindings = container.HostConfig.PortBindings;
+      var ports = [];
+
+      for (var key in portBindings) {
+        ports.push(portBindings[key][0].HostPort + ': ' + key);
+      }
+
+      // formate created
+      var created = container.Created;
+      var tmpArr = created.split('T');
+      var date = tmpArr[0];
+      var time = tmpArr[1].split('.')[0];
+      created = date + ' ' + time;
+
+      var c = {
+        'id': container.Id,
+        'name': container.Name.slice(1),
+        'image': container.Config.Image,
+        'ports': JSON.stringify(ports),
+        'binds': JSON.stringify(container.HostConfig.Binds),
+        'pwd': container.Config.WorkingDir,
+        'command': container.Config.Cmd.join(' '),
+        'status': container.State.Status,
+        'created': created
+      };
+
+      function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+          json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+          var cls = 'number';
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = 'key';
+            } else {
+              cls = 'string';
+            }
+          } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+          } else if (/null/.test(match)) {
+            cls = 'null';
+          }
+          return '<span class="' + cls + '">' + match + '</span>';
+        });
+      }
+
+      var containerDetail = syntaxHighlight(container);
+
+      res.render('container/info', {
+        'title': config.language.CONTAINER_INFO,
+        'user': req.session.user,
+        'error': req.flash('error').toString(),
+        'success': req.flash('success').toString(),
+
+        'containerInfo': c,
+        'containerDetail': containerDetail
+      });
+    });
+  },  // end getOneContainer
+
+  'createContainer': function (req, res, next) {
     if (req.method == 'GET') {
       imageApi.getImages(function (error, images) {
         if (error) {
@@ -63,7 +160,7 @@ module.exports = {
           return res.render('/internal_error');
         }
 
-        for (var i = 0, iLength = images.length; i < iLength; i++) {
+        for (var i = 0, length = images.length; i < length; i++) {
           images[i] = images[i].RepoTags[0];
         }
 
@@ -131,4 +228,43 @@ module.exports = {
       });
     }
   },  // end createContainer
+
+  'restartContainer': function (req, res, next) {
+    var containerId = req.params.containerId;
+
+    containerApi.reStartContainer(containerId, function (error, result) {
+      if (error) {
+        console.error(error);
+        return res.render('/internal_error');
+      }
+
+      res.redirect('/container/' + containerId);
+    });
+  },  // end restartContainer
+
+  'stopContainer': function (req, res, next) {
+    var containerId = req.params.containerId;
+
+    containerApi.stopContainer(containerId, function (error, result) {
+      if (error) {
+        console.error(error);
+        return res.render('/internal_error');
+      }
+
+      res.redirect('/container/' + containerId);
+    });
+  },  // end restartContainer
+
+  'startContainer': function (req, res, next) {
+    var containerId = req.params.containerId;
+
+    containerApi.startContainer(containerId, function (error, result) {
+      if (error) {
+        console.error(error);
+        return res.render('/internal_error');
+      }
+
+      res.redirect('/container/' + containerId);
+    });
+  }  // end restartContainer
 };
