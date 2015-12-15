@@ -1,7 +1,13 @@
 <%- include ../header.ejs %>
 
 <div class="row">
-    <div class="col-md-8 col-md-offset-2">
+    <div class="col-md-4">
+        <div class="container-item">
+            <h3>访问地址</h3>
+            <hr />
+            http://dockerci.duanpengfei.com:<%= containerInfo.ports.split(':')[0].slice(2); %>
+        </div>
+
         <div class="container-control">
             <% if (containerInfo.status == 'running') { %>
             <form action="/container/restart/<%= containerInfo.id; %>" method="post">
@@ -16,7 +22,9 @@
             </form>
             <% } %>
         </div>
+    </div>
 
+    <div class="col-md-8">
         <!-- container info -->
         <div class="container-item">
             <h3>摘要信息</h3>
