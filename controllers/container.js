@@ -196,7 +196,7 @@ module.exports = {
         ports.push(Port.PublicPort);
       });
 
-      var url = config.server.host + '/webhook/container/' + crypto.createHash('md5').update(name).digest('hex');
+      var url = config.server.host + ':' + config.server.port + '/webhook/container/' + crypto.createHash('md5').update(name).digest('hex');
 
       var newContainer = {
         'name': name,
@@ -279,3 +279,4 @@ module.exports = {
     });
   }  // end restartContainer
 };
+

@@ -36,7 +36,7 @@ app.use(session({
   },
   'store': new MongoStroe({
     'db': 'dockerci',
-    'host': 'localhost',
+    'host': 'mongodb',
     'port': 27017
   })
 }));

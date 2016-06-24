@@ -21,14 +21,14 @@ var config = {
   'SECRET': 'hardtoguess',
 
   'mongodb': {
-    'host': '127.0.0.1',
+    'host': 'mongodb',
     'port': 27017,
     'db': 'dockerci'
   },
 
   'server': {
     'host': 'http://s0.tinydust.cn',
-    'port': 3000,
+    'port': 30032,
     'ip': '119.254.103.173'
   },
 
