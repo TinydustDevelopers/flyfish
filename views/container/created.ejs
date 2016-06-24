@@ -12,7 +12,7 @@
                 <span class="key">Image:</span>&nbsp;<span class="string"><%= container.image; %></span>
             </div>
             <div class="container-attr">
-                <span class="key">Port:</span>&nbsp;<span class="string"><%= container.port; %></span>
+                <span class="key">Port:</span>&nbsp;<span class="string"><%= container.ports; %></span>
             </div>
             <div class="container-attr">
                 <span class="key">Webhook:</span>&nbsp;<span class="string"><%= container.url; %></span>
@@ -25,7 +25,7 @@
         <% } else { %>
         <div class="alert alert-danger">
             <p>
-                没有创建容器
+                没有正在追踪的容器
             </p>
         </div>
         <% } %>

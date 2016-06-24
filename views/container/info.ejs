@@ -5,7 +5,7 @@
         <div class="container-item">
             <h3>访问地址</h3>
             <hr />
-            http://dockerci.duanpengfei.com:<%= containerInfo.ports.split(':')[0].slice(2); %>
+            <%= server + ':' + containerInfo.ports.split(':')[0].slice(2); %>
         </div>
 
         <div class="container-control">
@@ -45,7 +45,7 @@
                 <span class="key">Bings:</span>&nbsp;<span class="string"><%= containerInfo.binds; %></span>
             </div>
             <div class="container-attr">
-                <span class="key">Wording Dir:</span>&nbsp;<span class="string"><%= containerInfo.pwd; %></span>
+                <span class="key">Working Dir:</span>&nbsp;<span class="string"><%= containerInfo.pwd; %></span>
             </div>
             <div class="container-attr">
                 <span class="key">Command:</span>&nbsp;<span class="string"><%= containerInfo.command; %></span>

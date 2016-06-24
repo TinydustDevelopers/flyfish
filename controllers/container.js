@@ -19,15 +19,15 @@ module.exports = {
       var currentUser = req.session.user.username;
       var upContainers = [];
       var exitContainers = [];
-      console.log(currentUser);
+      // console.log(currentUser);
 
       for (var i = 0, length = containers.length; i < length; i++) {
         var containerName = containers[i].Names[0].slice(1);
-        var containerUser = containerName.split('-')[0];
+        // var containerUser = containerName.split('-')[0];
 
-        console.log(containerUser);
+        // console.log(containerUser);
 
-        if (containerUser == currentUser) {
+        // if (containerUser == currentUser) {
           // timestamp to date
           var date = new Date(containers[i].Created * 1000);
           var year = date.getFullYear();
@@ -51,7 +51,7 @@ module.exports = {
           } else {
             exitContainers.push(c);
           }
-        }
+        // }
       }
 
       res.render('container/running', {
@@ -146,6 +146,7 @@ module.exports = {
         'error': req.flash('error').toString(),
         'success': req.flash('success').toString(),
 
+        'server': config.server.host,
         'containerInfo': c,
         'containerDetail': containerDetail
       });
@@ -164,46 +165,56 @@ module.exports = {
           images[i] = images[i].RepoTags[0];
         }
 
-        res.render('container/create', {
-          'title': config.language.CREATE_CONTAINER,
-          'user': req.session.user,
-          'error': req.flash('error').toString(),
-          'success': req.flash('success').toString(),
+        containerApi.getContainers(function (error, containers) {
+          if (error) {
+            console.error(error);
+            return res.render('/internal_error');
+          } else {
+            res.render('container/create', {
+              'title': config.language.CREATE_CONTAINER,
+              'user': req.session.user,
+              'error': req.flash('error').toString(),
+              'success': req.flash('success').toString(),
 
-          'images': images
-        })
+              'containers': containers,
+              'images': images
+            });
+          }
+        });
       });
     } else if (req.method == 'POST') {
-      var name = req.body['container-name'];
-      var image = req.body['image-name'];
-      var command = req.body['command'];
-      var port = req.body['port'];
+      var body = req.body;
+      var container = JSON.parse(body.container);
 
-      if (!(name && command && port && image)) {
-        req.flash('error', '容器信息不完整');
-        return res.redirect('/container/create');
-      }
+      var id = container.Id;
+      var dir = container.Mounts[0].Source;
+      var name = container.Names[0].slice(1, container.Names[0].length);
+      var image = container.Image;
+      var command = container.Command;
+      var ports = [];
+      container.Ports.forEach(function (Port) {
+        ports.push(Port.PublicPort);
+      });
 
-      name = req.session.user.username + '-' + req.body['container-name'];
       var url = config.server.host + '/webhook/container/' + crypto.createHash('md5').update(name).digest('hex');
 
       var newContainer = {
         'name': name,
         'image': image,
         'command': command,
-        'port': port,
-        'Id': '',
-        'dir': config.repo.location + '/' + name,
-        'link': [],
+        'ports': ports,
+        'Id': id,
+        'dir': dir,
+        // 'link': [],
         'url': url,
         'user_id': req.session.user._id,
         'start_at': new Date().getTime(),
-        'restart_at': 0,
-        'exit_at': 0,
-        'restart_num': 0,
-        'exit_num': 0,
-        'error_exit_num': 0,
-        'deleted': 0
+        // 'restart_at': 0,
+        // 'exit_at': 0,
+        // 'restart_num': 0,
+        // 'exit_num': 0,
+        // 'error_exit_num': 0,
+        // 'deleted': 0
       };
 
       Container.getByName(name, function (error, container) {

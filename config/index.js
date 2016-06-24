@@ -7,7 +7,7 @@ var config = {
     'REGISTER': '注册',
     'CHARGE': '充值',
 
-    'RUNNING_CONTAINER': '已运行的容器',
+    'RUNNING_CONTAINER': '已追踪的容器',
     'CREATED_CONTAINER': '已创建的容器',
     'CONTAINER_INFO': '容器详细信息',
 
@@ -27,19 +27,20 @@ var config = {
   },
 
   'server': {
-    'host': 'http://dockerci.duanpengfei.com',
-    'ip': '207.226.141.72'
+    'host': 'http://s0.tinydust.cn',
+    'port': 3000,
+    'ip': '119.254.103.173'
   },
 
   'docker': {
     'api': {
-      'ip': '207.226.141.72',
+      'ip': 's0.tinydust.cn',
       'port': 2375
     }
   },
 
   'repo': {
-    'location': '/root/docker_ci_repo'
+    'location': '/Users/fei/docker_ci_repo'
   }
 };
 

@@ -36,8 +36,6 @@ module.exports = {
         formatImages.push(image);
       }
 
-      console.log(images);
-
       res.render('image/downloaded', {
         'title': config.language.DOWNLOADEDIMAGE,
         'user': req.session.user,
