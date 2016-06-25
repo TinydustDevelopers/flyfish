@@ -27,20 +27,16 @@ var config = {
   },
 
   'server': {
-    'host': 'http://s0.tinydust.cn',
+    'host': 'http://int.tinydust.cn',
     'port': 30032,
-    'ip': '119.254.103.173'
+    'ip': '209.9.106.252'
   },
 
   'docker': {
     'api': {
-      'ip': 's0.tinydust.cn',
+      'ip': 'int.tinydust.cn',
       'port': 2375
     }
-  },
-
-  'repo': {
-    'location': '/Users/fei/docker_ci_repo'
   }
 };
 
